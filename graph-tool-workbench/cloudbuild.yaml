@@ -1,0 +1,8 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/notebook-images/graph-tool:latest', '.']
+
+images:
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/notebook-images/graph-tool:latest'
+
+timeout: '3600s'
