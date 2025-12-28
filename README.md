@@ -7,7 +7,7 @@ Follow these steps to create your own notebook environment:
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Navigate to **Vertex AI** → **Workbench** → **Instances**
-3. Click **Create New**
+3. Click **Create New** -> **Advanced Options**
 4. Configure the instance:
    - **Name**: `graph-tool-YOURNAME` (replace YOURNAME with your name)
    - **Region**: `us-east1`
