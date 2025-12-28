@@ -24,7 +24,10 @@ RUN mamba install -y -c conda-forge \
     "pyarrow>=14.0.0" \
     jupyter \
     ipykernel \
-    git && \
+    git \
+    ipysigma \
+    plotly \
+    tqdm && \
     mamba clean -afy
 
 # Clone repo
