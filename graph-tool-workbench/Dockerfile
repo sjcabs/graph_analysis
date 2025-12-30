@@ -22,16 +22,21 @@ RUN mamba install -y -c conda-forge \
     gcsfs \
     python-dotenv \
     "pyarrow>=14.0.0" \
-    jupyter \
     ipykernel \
+    ipywidgets \
     git \
-    ipysigma \
     plotly \
     tqdm && \
     mamba clean -afy
 
+# Install ipysigma in conda (kernel)
+RUN /opt/conda/bin/pip install ipysigma
+
+# Install ipysigma in JupyterLab 4 environment (frontend)
+RUN /opt/micromamba/envs/jupyterlab4/bin/pip install ipysigma
+
 # Clone repo
-RUN git clone https://github.com/sjcabs/sjcabs-graph-tutorial.git /home/jupyter/sjcabs-graph-tutorial
+RUN git clone https://github.com/sjcabs/graph_analysis.git /home/jupyter/sjcabs-graph-analysis
 
 # Register conda kernel
 RUN /opt/conda/bin/python -m ipykernel install --name graph-tool --display-name "Python 3.10 (graph-tool)"
