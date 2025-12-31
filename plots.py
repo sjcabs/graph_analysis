@@ -22,7 +22,8 @@ except ImportError:
 
 def visualize_graph(G, node_color_attr=None, node_size_attr=None,
                     edge_color_attr=None, default_node_size=5,
-                    height=800, **sigma_kwargs):
+                    height=800, hide_null_colors=True,
+                    **sigma_kwargs):
     """
     Visualize a NetworkX DiGraph using ipysigma.
 
@@ -41,6 +42,8 @@ def visualize_graph(G, node_color_attr=None, node_size_attr=None,
         Default node size when node_size_attr is None
     height : int
         Height of the widget in pixels
+    hide_null_colors : bool
+        If True, nodes with None/null color attribute values are grouped as '__unlabeled__'
     **sigma_kwargs : dict
         Additional arguments passed to Sigma()
 
@@ -61,7 +64,30 @@ def visualize_graph(G, node_color_attr=None, node_size_attr=None,
     kwargs = {'height': height, **sigma_kwargs}
 
     if node_color_attr:
-        kwargs['node_color'] = node_color_attr
+        if hide_null_colors:
+            # Create a display attribute that keeps real categories but assigns
+            # unique random IDs to unlabeled nodes. This way:
+            # - Real categories get colored by ipysigma (top 10 by frequency)
+            # - Unlabeled nodes each become a "rare" category (count=1) and
+            #   fall outside top 10, getting the default gray color
+            display_attr = f'_display_{node_color_attr}'
+            attrs = nx.get_node_attributes(G, node_color_attr)
+
+            unlabeled_counter = 0
+            for node in G.nodes():
+                val = attrs.get(node)
+                # Treat None and legacy '__unlabeled__' as unlabeled
+                if val is None or val == '__unlabeled__':
+                    # Each unlabeled node gets a unique "rare" category
+                    G.nodes[node][display_attr] = f'_unlabeled_{unlabeled_counter}'
+                    unlabeled_counter += 1
+                else:
+                    G.nodes[node][display_attr] = val
+
+            # Use the display attribute for coloring, original stays intact
+            kwargs['node_color'] = display_attr
+        else:
+            kwargs['node_color'] = node_color_attr
 
     if node_size_attr:
         kwargs['node_size'] = node_size_attr
