@@ -102,10 +102,11 @@ def visualize_graph(G, node_color_attr=None, node_size_attr=None,
 
 
 def plot_adjacency_matrix(G, sort_by='degree', community_attr=None,
-                          node_attr=None, size=800, marker_size=1,
-                          show_boundaries=True, boundary_positions=None):
+                          node_attr=None, figsize=None, marker_size=0.1,
+                          show_boundaries=True, boundary_positions=None,
+                          title=None, ax=None):
     """
-    Plot adjacency matrix of a NetworkX DiGraph using Plotly.
+    Plot adjacency matrix of a NetworkX DiGraph using matplotlib.
 
     Parameters
     ----------
@@ -117,30 +118,26 @@ def plot_adjacency_matrix(G, sort_by='degree', community_attr=None,
         Node attribute name containing community labels (used when sort_by='community')
     node_attr : str, optional
         Node attribute name to sort by (used when sort_by='attribute')
-    size : int
-        Figure width and height in pixels
-    marker_size : int
-        Size of each dot in the matrix
+    figsize : tuple, optional
+        Figure size as (width, height) in inches. If None, defaults to (8, 8).
+    marker_size : float
+        Size of each dot in the matrix. Default 0.1 for sparse plots.
     show_boundaries : bool
         Whether to show community boundaries when sorted by community
     boundary_positions : list, optional
-        Manual boundary positions (list of indices where communities end)
+        Manual boundary positions (list of indices where communities end).
+        If None and sort_by='community', boundaries are computed automatically.
+    title : str, optional
+        Custom title. If None, auto-generates based on graph stats.
+    ax : matplotlib.axes.Axes, optional
+        Axes to plot on. If None, creates new figure and axes.
 
     Returns
     -------
-    go.Figure
-        Plotly figure object
-
-    Raises
-    ------
-    ImportError
-        If plotly is not installed
+    matplotlib.figure.Figure or matplotlib.axes.Axes
+        Returns Figure if ax was None, otherwise returns the provided Axes.
     """
-    if not PLOTLY_AVAILABLE:
-        raise ImportError("plotly is required for plot_adjacency_matrix(). Install with: pip install plotly")
-
     nodes = list(G.nodes())
-    node_to_idx = {n: i for i, n in enumerate(nodes)}
     A = nx.adjacency_matrix(G, nodelist=nodes)
 
     # Get nonzero coordinates
@@ -167,44 +164,57 @@ def plot_adjacency_matrix(G, sort_by='degree', community_attr=None,
 
     # Apply sorting
     row_map = {old: new for new, old in enumerate(order)}
-    rows_sorted = [row_map[r] for r in rows]
-    cols_sorted = [row_map[c] for c in cols]
-    sorted_nodes = [nodes[i] for i in order]
+    rows_sorted = np.array([row_map[r] for r in rows])
+    cols_sorted = np.array([row_map[c] for c in cols])
 
-    # Create figure
-    fig = go.Figure(data=go.Scattergl(
-        x=cols_sorted,
-        y=rows_sorted,
-        mode='markers',
-        marker=dict(size=marker_size, color='black'),
-        hovertemplate='%{customdata[0]} → %{customdata[1]}<extra></extra>',
-        customdata=[(sorted_nodes[r], sorted_nodes[c]) for r, c in zip(rows_sorted, cols_sorted)]
-    ))
+    # Create figure if needed
+    created_fig = ax is None
+    if created_fig:
+        if figsize is None:
+            figsize = (8, 8)
+        fig, ax = plt.subplots(figsize=figsize)
+    else:
+        fig = ax.figure
+
+    # Plot as sparse matrix (scatter plot of nonzero entries)
+    ax.scatter(cols_sorted, rows_sorted, s=marker_size, c='black', alpha=0.3)
+    ax.set_xlim(-0.5, len(nodes) - 0.5)
+    ax.set_ylim(len(nodes) - 0.5, -0.5)  # Reverse y-axis
 
     # Add community boundaries if requested
-    shapes = []
-    if show_boundaries and boundary_positions:
-        for pos in boundary_positions:
-            # Horizontal line
-            shapes.append(dict(
-                type='line', x0=-0.5, x1=len(nodes)-0.5, y0=pos-0.5, y1=pos-0.5,
-                line=dict(color='red', width=1)
-            ))
-            # Vertical line
-            shapes.append(dict(
-                type='line', x0=pos-0.5, x1=pos-0.5, y0=-0.5, y1=len(nodes)-0.5,
-                line=dict(color='red', width=1)
-            ))
+    if show_boundaries:
+        boundaries = boundary_positions
+        # Auto-compute boundaries if sorting by community
+        if boundaries is None and sort_by == 'community' and community_attr:
+            labels_sorted = [labels[i] for i in order]
+            boundaries = []
+            cumsum = 0
+            current_label = labels_sorted[0] if labels_sorted else None
+            for i, label in enumerate(labels_sorted):
+                if label != current_label:
+                    boundaries.append(cumsum)
+                    current_label = label
+                cumsum = i + 1
 
-    fig.update_layout(
-        width=size, height=size,
-        title=f'Adjacency Matrix ({G.number_of_nodes()} nodes, {G.number_of_edges()} edges, sorted by {sort_by})',
-        yaxis=dict(autorange='reversed', scaleanchor='x', title='Pre-synaptic neuron'),
-        xaxis=dict(constrain='domain', title='Post-synaptic neuron'),
-        shapes=shapes
-    )
+        if boundaries:
+            for pos in boundaries:
+                ax.axhline(y=pos - 0.5, color='red', linewidth=0.5, alpha=0.7)
+                ax.axvline(x=pos - 0.5, color='red', linewidth=0.5, alpha=0.7)
 
-    return fig
+    # Title
+    if title is None:
+        title = f'Adjacency Matrix ({G.number_of_nodes()} nodes, {G.number_of_edges()} edges, sorted by {sort_by})'
+    ax.set_title(title, fontsize=11, fontweight='bold')
+
+    # Labels
+    ax.set_xlabel('Post-synaptic neuron')
+    ax.set_ylabel('Pre-synaptic neuron')
+    ax.set_aspect('equal')
+
+    if created_fig:
+        plt.tight_layout()
+        return fig
+    return ax
 
 
 def draw_motif_graph(ax, motif_nx, label=None, fontsize=7.0):
