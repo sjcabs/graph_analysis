@@ -18,18 +18,16 @@ Follow these steps to create your own notebook environment:
    - For 'Docker container image', choose 'select' and choose 'graph-tool' and select the one with 'latest' tag from the drop-down. 
 7. Under **Machine type** choose n2-standard-32
    - `n2-standard-32`
-7. Select the image URI:
-```
-   us-east1-docker.pkg.dev/sjcabs/notebook-images/graph-tool:latest
-```
+   - 'Enable Idle Shutdown' = 30
 8. Click **Create**
 9. Wait 10-15 minutes for provisioning
 10. Once status shows **Running**, click **Open JupyterLab**
+11. Once in the jupyter lab. Click the github tab on the left (3rd tab) -> clone a repository -> paste this repo link there. 
+12. Now navigate inside `/graph_analysis` and we are all set!
 
 ### Using the Environment
 
-1. In the folder panel on the left, you should see sjcabs-graph-tutorial/graph_tutorial.ipynb. Open it.
-2. Select the **"Python 3.10 (graph-tool)"** kernel
+Select the **"Python 3.10 (graph-tool)"** kernel
 
 ### Saving Your Work
 
