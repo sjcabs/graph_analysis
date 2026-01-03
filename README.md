@@ -16,8 +16,8 @@ Follow these steps to create your own notebook environment:
 5. Click **Advanced options**
 6. Under **Environment**, select **Use custom container**
    - For 'Docker container image', choose 'select' and choose 'graph-tool' and select the one with 'latest' tag from the drop-down. 
-7. Under **Machine type** choose n2-standard-32
-   - `n2-standard-32`
+7. Under **Machine type** n2-standard-96
+   - Choose `n2-standard-96`
    - 'Enable Idle Shutdown' = 30
 8. Click **Create**
 9. Wait 10-15 minutes for provisioning
