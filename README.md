@@ -7,14 +7,17 @@ Follow these steps to create your own notebook environment:
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Navigate to **Vertex AI** → **Workbench** → **Instances**
-3. Click **Create New** -> **Advanced Options**
+3. Click **Create New**
 4. Configure the instance:
-   - **Name**: `graph-tool-YOURNAME` (replace YOURNAME with your name)
+   - **Name**: `YOURNAME-graph` 
    - **Region**: `us-east1`
    - **Zone**: `us-east1-b`
-   - **Machine type**: `e2-standard-2`
+   - Uncheck 'Enable Apache Spark and BigQuery Kernels'
 5. Click **Advanced options**
-6. Under **Environment**, select **Custom container**
+6. Under **Environment**, select **Use custom container**
+   - For 'Docker container image', choose 'select' and choose 'graph-tool' and select the one with 'latest' tag from the drop-down. 
+7. Under **Machine type** choose n2-standard-32
+   - `n2-standard-32`
 7. Select the image URI:
 ```
    us-east1-docker.pkg.dev/sjcabs/notebook-images/graph-tool:latest
